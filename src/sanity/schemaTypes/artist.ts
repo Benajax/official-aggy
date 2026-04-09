@@ -19,6 +19,12 @@ export const artistType = {
       },
     },
     {
+      name: 'heroVideoPool',
+      title: 'Hero Video Pool',
+      type: 'array',
+      of: [{ type: 'file', options: { accept: 'video/*' } }]
+    },
+    {
       name: 'logoImg',
       title: 'Logo Image',
       type: 'image',
