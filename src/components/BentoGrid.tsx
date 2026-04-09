@@ -17,9 +17,25 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
   const [progress, setProgress] = useState(0);
   const [hasEnded, setHasEnded] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
   // --- CONTACT MODAL STATE ---
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!artist) return; // Wait for artist data to be available
+    if (selectedVideo !== null) return; // Only select once per mount
+
+    const pool = artist.heroVideoPool || [];
+    if (pool.length > 0) {
+      // Pick a random video from the pool
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      setSelectedVideo(pool[randomIndex]);
+    } else {
+      // Fall back to single hero video if pool is empty
+      setSelectedVideo(artist.heroVideo);
+    }
+  }, [artist, selectedVideo]); // Include selectedVideo to prevent re-running once set
 
   // --- AUTO-PAUSE ON SCROLL (INTERSECTION OBSERVER) ---
   useEffect(() => {
@@ -101,27 +117,33 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
         onMouseLeave={() => setShowControls(false)}
         className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] bg-zinc-950 border border-white/5 group shadow-2xl"
       >
-      <video 
-        ref={videoRef}
-        src={artist?.heroVideo} 
-        autoPlay 
-        muted 
-        playsInline 
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={() => { 
-          if (videoRef.current) {
-            videoRef.current.currentTime = 0; // Snap back to the very first frame
-            videoRef.current.pause();         // Stay paused on frame 1
-          }
-          setHasEnded(true); 
-          setIsPlaying(false); 
-        }}
-        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
-          hasEnded 
-            ? 'opacity-40 blur-sm scale-105' // Dims and blurs the first frame for the UI
-            : 'opacity-60 group-hover:opacity-80'
-        }`} 
-      />
+      {selectedVideo ? (
+        <video 
+          ref={videoRef}
+          src={selectedVideo}
+          autoPlay 
+          muted 
+          playsInline 
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={() => { 
+            if (videoRef.current) {
+              videoRef.current.currentTime = 0; // Snap back to the very first frame
+              videoRef.current.pause();         // Stay paused on frame 1
+            }
+            setHasEnded(true); 
+            setIsPlaying(false); 
+          }}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
+            hasEnded 
+              ? 'opacity-40 blur-sm scale-105' // Dims and blurs the first frame for the UI
+              : 'opacity-60 group-hover:opacity-80'
+          }`} 
+        />
+      ) : (
+        <div className="absolute inset-0 w-full h-full bg-zinc-900 flex items-center justify-center">
+          <div className="text-white/50">Loading video...</div>
+        </div>
+      )}
 
         {/* CUSTOM CONTROLS OVERLAY */}
         <div className={`absolute inset-0 z-20 flex flex-col justify-end p-8 transition-opacity duration-500 ${showControls && !hasEnded ? 'opacity-100 bg-gradient-to-t from-black/90 via-transparent to-transparent' : 'opacity-0'}`}>

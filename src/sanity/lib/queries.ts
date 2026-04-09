@@ -7,7 +7,8 @@ export const ARTIST_DATA_QUERY = defineQuery(`
       name,
       logoText,
       "logoImg": logoImg.asset->url,
-      "heroVideo": heroVideo.asset->url
+      "heroVideo": heroVideo.asset->url,
+      "heroVideoPool": heroVideoPool[].asset->url
     },
     "tourDates": *[_type == "tourDate"] | order(date asc) {
       _id,
