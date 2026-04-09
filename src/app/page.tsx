@@ -4,20 +4,34 @@ import { client } from '@/lib/sanity';
 import { ARTIST_DATA_QUERY } from '@/sanity/lib/queries';
 
 export default async function Home() {
-  // One fetch to rule them all
-  const data = await client.fetch(ARTIST_DATA_QUERY);
+  /**
+   * By adding 'tags', we give this specific data a label ('artist') 
+   * that we can target later to clear the cache instantly.
+   */
+  const data = await client.fetch(
+    ARTIST_DATA_QUERY,
+    {},
+    {
+      next: { tags: ['artist'] }
+    }
+  );
 
-  // If the Artist hasn't been created yet, show the guard
-  if (!data.artist) {
-    return <div className="text-white p-20 text-center uppercase">Artist not found in Sanity</div>;
+  // Use optional chaining (?.) and a more robust guard for the artist data
+  if (!data?.artist) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black text-white p-20 text-center uppercase tracking-widest">
+        Artist data not found in Sanity
+      </div>
+    );
   }
 
   return (
     <main className="min-h-screen bg-black py-12 px-6">
       <BentoGrid 
         artist={data.artist} 
-        tourDates={data.tourDates} 
-        socials={data.socials} 
+        // Providing empty array fallbacks prevents crashes if data is missing
+        tourDates={data.tourDates || []} 
+        socials={data.socials || []} 
       />
     </main>
   );
