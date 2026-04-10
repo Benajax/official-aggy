@@ -1,0 +1,10 @@
+
+##### Don't crawl for now - delete when ready
+User-agent: *
+Disallow: /
+
+##### Start crawling- uncomment when ready
+#User-agent: *
+#Allow: /
+
+#Sitemap: https://www.officialaggy.com/sitemap.xml
