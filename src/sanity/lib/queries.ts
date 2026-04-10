@@ -1,4 +1,3 @@
-// src/sanity/lib/queries.ts
 import { defineQuery } from 'next-sanity'
 
 export const ARTIST_DATA_QUERY = defineQuery(`
@@ -8,20 +7,12 @@ export const ARTIST_DATA_QUERY = defineQuery(`
       logoText,
       "logoImg": logoImg.asset->url,
       "heroVideo": heroVideo.asset->url,
-      "heroVideoPool": heroVideoPool[].asset->url
+      "heroVideoPool": heroVideoPool[] {
+        "url": videoFile.asset->url,
+        "fillContainer": fillContainer
+      }
     },
-    "tourDates": *[_type == "tourDate"] | order(date asc) {
-      _id,
-      city,
-      venue,
-      date,
-      ticketUrl
-    },
-    "socials": *[_type == "socialPost"] | order(_createdAt desc) [0...3] {
-      _id,
-      "mediaUrl": image.asset->url,
-      platform,
-      url
-    }
+    "tourDates": *[_type == "tourDate"] | order(date asc) { _id, city, venue, date, ticketUrl },
+    "socials": *[_type == "socialPost"] | order(_createdAt desc) [0...3] { _id, "mediaUrl": image.asset->url, platform, url }
   }
 `)
