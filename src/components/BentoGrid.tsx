@@ -1,65 +1,79 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   Play, Pause, RotateCcw, Volume2, VolumeX, Camera, ArrowUpRight, Ghost, Plus,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 import ContactModal from './ContactModal';
 
+const tileHover: Variants = {
+  initial: { scale: 1, y: 0, zIndex: 1 },
+  hover: { 
+    scale: 1.02, 
+    y: -5, 
+    zIndex: 10,
+    transition: { duration: 0.2, ease: "easeOut" },
+    boxShadow: "0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(6, 182, 212, 0.15)"
+  }
+};
+
 export default function BentoGrid({ socials, artist, tourDates }: any) {
   const posts = socials?.posts || socials || [];
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // --- STATES ---
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [hasEnded, setHasEnded] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false); 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const pool = artist?.heroVideoPool || [];
 
   useEffect(() => {
-    if (pool.length > 0) {
+    if (pool.length > 0 && currentIndex === null) {
       setCurrentIndex(Math.floor(Math.random() * pool.length));
     }
-  }, [artist]);
+  }, [artist, pool.length, currentIndex]);
 
-  const currentVideo = pool[currentIndex] || null;
+  const currentVideo = currentIndex !== null ? pool[currentIndex] : null;
 
-  // --- NAVIGATION LOGIC ---
+  // --- 🔊 MUTE SYNC ---
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted, currentIndex, isVideoReady]); 
+
+  // --- NAVIGATION (Fixed Interaction) ---
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => (prev + 1) % pool.length);
+    setIsVideoReady(false);
+    setCurrentIndex((prev) => (prev === null ? 0 : (prev + 1) % pool.length));
     setHasEnded(false);
     setIsPlaying(true);
   };
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => (prev - 1 + pool.length) % pool.length);
+    setIsVideoReady(false);
+    setCurrentIndex((prev) => (prev === null ? 0 : (prev - 1 + pool.length) % pool.length));
     setHasEnded(false);
     setIsPlaying(true);
   };
 
-  // --- REPLAY LOGIC (FIXED) ---
-  const handleReplay = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Stop parent togglePlay from firing
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
-      setHasEnded(false);
-      setIsPlaying(true);
-    }
+  const handleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(!isMuted);
   };
 
-  // --- VIDEO INTERACTION ---
   const togglePlay = () => {
-    if (hasEnded) return; // Don't toggle if the video is at the replay screen
+    if (hasEnded) return;
     if (videoRef.current) {
       if (videoRef.current.paused) {
         videoRef.current.play();
@@ -71,15 +85,16 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
     }
   };
 
-  const handleMute = (e: React.MouseEvent) => {
+  const handleReplay = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+      setHasEnded(false);
+      setIsPlaying(true);
     }
   };
 
-  // --- AUTO-PAUSE ON SCROLL ---
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -102,119 +117,112 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-7xl mx-auto auto-rows-[200px] p-4 bg-black min-h-screen">
       
-      {/* 1. LOGO BLOCK */}
-      <div className="md:col-span-1 md:row-span-1 bg-zinc-950 rounded-[2.5rem] overflow-hidden relative border border-white/5 flex items-center justify-center p-4 group">
-        {artist?.logoImg && (
-          <img src={artist.logoImg} className="w-full h-full object-contain hover:scale-110 transition-transform duration-500 z-10" alt="Logo" />
-        )}
+      {/* 1. LOGO & 2. BANNER */}
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-1 bg-zinc-950 rounded-[2.5rem] overflow-hidden relative border border-white/5 flex items-center justify-center p-4">
+        {artist?.logoImg && <img src={artist.logoImg} className="w-full h-full object-contain z-10" alt="Logo" />}
         <div className="absolute inset-0 bg-cyan-500/5 blur-3xl" />
-      </div>
+      </motion.div>
 
-      {/* 2. BANNER BLOCK */}
-      <div className="md:col-span-3 md:row-span-1 bg-black rounded-[2.5rem] overflow-hidden border border-white/5 flex items-center justify-center relative">
-        <h2 className="text-white font-[900] text-5xl md:text-7xl tracking-tighter uppercase italic z-10">
-          MULTIFACETED<span className="text-emerald-500">.</span>
-        </h2>
-      </div>
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-3 md:row-span-1 bg-black rounded-[2.5rem] overflow-hidden border border-white/5 flex items-center justify-center relative">
+        <h2 className="text-white font-[900] text-5xl md:text-7xl tracking-tighter uppercase italic z-10">MULTIFACETED.</h2>
+      </motion.div>
 
-      {/* 3. HERO VIDEO (2x2) - ADAPTIVE VIBE SWITCHER */}
-      <div 
+      {/* 3. HERO VIDEO PLAYER */}
+      <motion.div 
         ref={containerRef}
+        variants={tileHover} initial="initial" whileHover="hover"
         onMouseEnter={() => setShowControls(true)}
         onMouseLeave={() => setShowControls(false)}
         onClick={togglePlay}
-        className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] bg-black border border-white/5 group shadow-2xl flex items-center justify-center cursor-pointer"
+        className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[2.5rem] bg-black border border-white/5 shadow-2xl flex items-center justify-center cursor-pointer"
       >
         <AnimatePresence mode="wait">
           {currentVideo ? (
             <motion.div 
               key={currentVideo.url}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: isVideoReady ? 1 : 0 }} 
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6 }}
               className="absolute inset-0 w-full h-full flex items-center justify-center"
             >
-              {/* AMBIENT GLOW LAYER */}
               <video 
                 src={currentVideo.url}
                 autoPlay muted loop playsInline
                 className="absolute inset-0 w-full h-full object-cover opacity-50 blur-[60px] scale-125"
               />
-
-              {/* MAIN VIDEO LAYER */}
               <video 
                 ref={videoRef}
                 src={currentVideo.url}
-                autoPlay muted playsInline 
+                autoPlay playsInline preload="auto"
+                onCanPlay={() => setIsVideoReady(true)}
                 onTimeUpdate={() => setProgress((videoRef.current!.currentTime / videoRef.current!.duration) * 100)}
                 onEnded={() => { setHasEnded(true); setIsPlaying(false); }}
                 className={`relative z-10 transition-all duration-1000 ${
-                  currentVideo.fillContainer 
-                    ? 'w-full h-full object-cover'   
-                    : 'h-full w-auto max-w-full object-contain' 
+                  currentVideo.fillContainer ? 'w-full h-full object-cover' : 'h-full w-auto max-w-full object-contain' 
                 } ${hasEnded ? 'opacity-40 blur-sm' : 'opacity-100'}`} 
               />
             </motion.div>
-          ) : (
-            <div className="text-white/30 animate-pulse">Initialising...</div>
-          )}
+          ) : null}
         </AnimatePresence>
 
-        {/* NAVIGATION ARROWS */}
-        <div className={`absolute inset-0 z-40 flex items-center justify-between px-6 transition-opacity duration-500 ${showControls && pool.length > 1 ? 'opacity-100' : 'opacity-0'}`}>
-          <button onClick={handlePrev} className="p-3 bg-black/40 hover:bg-white hover:text-black rounded-full backdrop-blur-md transition-all border border-white/10 text-white">
+        {/* LOADING INDICATOR */}
+        {!isVideoReady && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* NAVIGATION LAYER - pointer-events-none ensures it doesn't block the video click */}
+        <div className={`absolute inset-0 z-[70] flex items-center justify-between px-6 transition-opacity duration-500 pointer-events-none ${showControls && pool.length > 1 ? 'opacity-100' : 'opacity-0'}`}>
+          <button 
+            onClick={handlePrev} 
+            className="p-3 bg-black/40 hover:bg-white hover:text-black rounded-full backdrop-blur-md transition-all border border-white/10 text-white pointer-events-auto"
+          >
             <ChevronLeft size={20} />
           </button>
-          <button onClick={handleNext} className="p-3 bg-black/40 hover:bg-white hover:text-black rounded-full backdrop-blur-md transition-all border border-white/10 text-white">
+          <button 
+            onClick={handleNext} 
+            className="p-3 bg-black/40 hover:bg-white hover:text-black rounded-full backdrop-blur-md transition-all border border-white/10 text-white pointer-events-auto"
+          >
             <ChevronRight size={20} />
           </button>
         </div>
 
-        {/* CONTROLS */}
-        <div className={`absolute inset-0 z-20 flex flex-col justify-end p-8 transition-opacity duration-500 ${showControls && !hasEnded ? 'opacity-100 bg-gradient-to-t from-black/90' : 'opacity-0'}`}>
-          <div className="flex items-center gap-4 w-full">
+        {/* CONTROLS LAYER - pointer-events-none allows interaction with arrows behind it */}
+        <div className={`absolute inset-0 z-50 flex flex-col justify-end p-8 transition-opacity duration-500 pointer-events-none ${showControls && !hasEnded ? 'opacity-100 bg-gradient-to-t from-black/90' : 'opacity-0'}`}>
+          <div className="flex items-center gap-4 w-full pointer-events-auto">
             <div className="relative flex-grow h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-cyan-500 shadow-[0_0_15px_#06b6d4]" style={{ width: `${progress}%` }} />
             </div>
-            
-            <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">
-              {currentIndex + 1} / {pool.length}
-            </span>
-
-            <button onClick={handleMute} className="text-white">
-              {isMuted ? <VolumeX size={20} className="text-zinc-500" /> : <Volume2 size={20} className="text-cyan-400" />}
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">{(currentIndex || 0) + 1} / {pool.length}</span>
+            <button 
+              onClick={handleMute} 
+              className="text-white hover:text-cyan-400 transition-colors p-2"
+            >
+              {isMuted ? <VolumeX size={24} className="text-zinc-500" /> : <Volume2 size={24} className="text-cyan-400" />}
             </button>
           </div>
         </div>
 
-        {/* REPLAY SCREEN */}
+        {/* REPLAY LAYER */}
         <AnimatePresence>
           {hasEnded && (
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-            >
-              <button 
-                onClick={handleReplay} 
-                className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-110 active:scale-95 transition-all shadow-2xl"
-              >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
+              <button onClick={handleReplay} className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-110 active:scale-95 transition-all">
                 <RotateCcw size={14} strokeWidth={3} /> Replay
               </button>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
-      {/* 4. MAIN SOCIAL (1x2) */}
-      <div className="md:col-span-1 md:row-span-2 bg-zinc-800 rounded-[2.5rem] overflow-hidden relative border border-white/5 group">
+      {/* REST OF GRID (4-8) */}
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-2 bg-zinc-800 rounded-[2.5rem] overflow-hidden relative border border-white/5 group">
         {posts[0] && <img src={posts[0].mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Social" />}
-      </div>
+      </motion.div>
 
-      {/* 5. TOUR DATES (1x2) */}
-      <div className="md:col-span-1 md:row-span-2 bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 flex flex-col h-full relative overflow-hidden">
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-2 bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 flex flex-col h-full relative overflow-hidden">
         <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-[0.3em] mb-8 font-bold text-center">Live Shows</p>
         <div className="space-y-6 overflow-y-auto flex-grow custom-scrollbar">
           {tourDates?.map((show: any) => (
@@ -225,25 +233,22 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
           ))}
         </div>
         <button onClick={() => setIsContactModalOpen(true)} className="mt-6 w-full py-4 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-cyan-400 transition-all">Contact</button>
-      </div>
+      </motion.div>
 
-      {/* 6. SPOTIFY (1x1) */}
-      <div className="md:col-span-1 md:row-span-1 bg-emerald-500/10 border border-emerald-500/20 rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:bg-emerald-500/20 transition-all">
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-1 bg-emerald-500/10 border border-emerald-500/20 rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:bg-emerald-500/20 transition-all">
         <Play fill="#10b981" className="text-emerald-500 transition-transform group-hover:scale-110" size={32} />
         <span className="text-emerald-500 font-black text-xs uppercase">Listen Now</span>
-      </div>
+      </motion.div>
 
-      {/* 7. SNAPCHAT (1x1) */}
-      <div className="bg-[#FFFC00] rounded-[2.5rem] p-8 flex flex-col justify-between text-black group cursor-pointer hover:scale-[1.02] transition-transform">
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" className="bg-[#FFFC00] rounded-[2.5rem] p-8 flex flex-col justify-between text-black group cursor-pointer hover:scale-[1.02] transition-transform">
          <Ghost size={36} strokeWidth={2.5} />
          <span className="text-[12px] font-black uppercase">@{artist?.logoText || 'AGGY'}</span>
-      </div>
+      </motion.div>
 
-      {/* 8. SMALL SOCIAL TILES (2x) */}
       {[1, 2].map((idx) => (
-        <div key={idx} className="md:col-span-1 md:row-span-1 bg-zinc-900 rounded-[2.5rem] overflow-hidden border border-white/5 group relative">
+        <motion.div key={idx} variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-1 bg-zinc-900 rounded-[2.5rem] overflow-hidden border border-white/5 group relative">
           {posts[idx] ? <img src={posts[idx].mediaUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500" alt="Social" /> : <div className="w-full h-full flex items-center justify-center opacity-40"><Plus size={24} className="text-white" /></div>}
-        </div>
+        </motion.div>
       ))}
 
       <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
