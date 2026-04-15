@@ -1,3 +1,4 @@
+// src/sanity/lib/queries.ts
 import { defineQuery } from 'next-sanity'
 
 export const ARTIST_DATA_QUERY = defineQuery(`
@@ -5,6 +6,8 @@ export const ARTIST_DATA_QUERY = defineQuery(`
     "artist": *[_type == "artist"][0] {
       name,
       logoText,
+      description, // Added this field
+      bio,         // Added this field
       "logoImg": logoImg.asset->url,
       "heroVideo": heroVideo.asset->url,
       "heroVideoPool": heroVideoPool[] {
