@@ -6,6 +6,6 @@ import { defineCliConfig } from 'sanity/cli'
 
 // We hardcode these so the CLI always has access to them during deployment
 const projectId = 'q31y36ab'
-const dataset = 'development' 
+const dataset = 'production' 
 
 export default defineCliConfig({ api: { projectId, dataset } })

@@ -1,21 +1,21 @@
 {
-  "createdAt": "2026-04-10T21:37:14.289Z",
-  "studioVersion": "5.20.0",
   "version": 3,
+  "createdAt": "2026-04-17T13:45:52.469Z",
   "workspaces": [
     {
+      "name": "default",
+      "title": "Default",
       "basePath": "/studio",
-      "dataset": "development",
-      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"2\" fill=\"#f7d455\"></rect><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" alignment-baseline=\"middle\" fill=\"hsla(47, 91%, 25%, 1)\" style=\"font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, &quot;Liberation Sans&quot;, Helvetica, Arial, system-ui, sans-serif;font-weight:500;font-size:13px;transform:translateY(1px)\">D</text></svg>",
+      "projectId": "q31y36ab",
+      "dataset": "production",
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"2\" fill=\"#721fe5\"></rect><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" alignment-baseline=\"middle\" fill=\"hsla(265, 79%, 91%, 1)\" style=\"font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, &quot;Liberation Sans&quot;, Helvetica, Arial, system-ui, sans-serif;font-weight:500;font-size:13px;transform:translateY(1px)\">D</text></svg>",
       "mediaLibrary": {
         "enabled": false,
         "__internal": {}
       },
-      "name": "default",
-      "projectId": "q31y36ab",
-      "schema": "d75b32f5.create-schema.json",
-      "title": "Default",
-      "tools": "ef87c8fe.create-tools.json"
+      "schema": "b20cc044.create-schema.json",
+      "tools": "ba47da56.create-tools.json"
     }
-  ]
+  ],
+  "studioVersion": "5.14.1"
 }

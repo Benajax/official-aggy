@@ -15,7 +15,7 @@ import {structure} from './src/sanity/structure'
 
 // Use the environment variable if it exists, otherwise use your hardcoded ID
 const projectId = envProjectId || 'q31y36ab'
-const dataset = envDataset || 'development'
+const dataset = envDataset || 'production'
 
 export default defineConfig({
   basePath: '/studio',
