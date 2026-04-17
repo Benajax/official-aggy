@@ -1,7 +1,7 @@
 export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-05-15'
 
 export const dataset = assertValue(
-  process.env.NEXT_PUBLIC_SANITY_DATASET || 'development', // Fallback value
+  process.env.NEXT_PUBLIC_SANITY_DATASET || 'production', // Fallback value
   'Missing environment variable: NEXT_PUBLIC_SANITY_DATASET'
 )
 
