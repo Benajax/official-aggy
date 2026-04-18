@@ -7,7 +7,6 @@ export const artistType = defineType({
   fields: [
     defineField({ name: 'name', type: 'string', title: 'Artist Name' }),
     defineField({ name: 'logoText', type: 'string', title: 'Logo Text' }),
-    // New Description Field Added Here
     defineField({ 
       name: 'description', 
       type: 'text', 
@@ -15,6 +14,15 @@ export const artistType = defineType({
       description: 'A short description used for SEO and social media previews.'
     }),
     defineField({ name: 'logoImg', type: 'image', title: 'Logo Image' }),
+    
+    // --- NEW BANNER FIELD ---
+    defineField({ 
+      name: 'bannerImg', 
+      type: 'image', 
+      title: 'Banner Image',
+      options: { hotspot: true } // This allows you to center the "Aggy" text in Sanity
+    }),
+
     defineField({
       name: 'heroVideoPool',
       title: 'Hero Video Pool',
