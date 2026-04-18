@@ -1,7 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-// 1. Import the PortableText component
 import { PortableText } from '@portabletext/react'; 
 import {
   Play, Pause, RotateCcw, Volume2, VolumeX, Camera, ArrowUpRight, Ghost, Plus,
@@ -66,17 +65,32 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-7xl mx-auto auto-rows-[200px] p-4 bg-black min-h-screen">
       
-      {/* 1. LOGO & 2. BANNER */}
+      {/* 1. LOGO (1 Column) */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" whileTap="tap" className="md:col-span-1 md:row-span-1 bg-zinc-950 rounded-[2.5rem] overflow-hidden relative border border-white/5 flex items-center justify-center p-4">
         {artist?.logoImg && <img src={artist.logoImg} className="w-full h-full object-contain z-10" alt="Logo" />}
         <div className="absolute inset-0 bg-cyan-500/5 blur-3xl" />
       </motion.div>
 
-      <motion.div variants={tileHover} initial="initial" whileHover="hover" whileTap="tap" className="md:col-span-3 md:row-span-1 bg-black rounded-[2.5rem] overflow-hidden border border-white/5 flex items-center justify-center relative text-center px-4">
-        <h2 className="text-white font-[900] text-4xl sm:text-7xl tracking-tighter uppercase italic z-10">MULTIFACETED.</h2>
+      {/* 2. BANNER (Now 2 Columns) */}
+      <motion.div variants={tileHover} initial="initial" whileHover="hover" whileTap="tap" className="md:col-span-2 md:row-span-1 bg-black rounded-[2.5rem] overflow-hidden border border-white/5 flex items-center justify-center relative text-center px-4 group">
+        {artist?.bannerImg ? (
+          <img 
+            src={artist.bannerImg} 
+            className="w-full h-full object-contain z-10 p-4 transition-transform duration-500 group-hover:scale-105" 
+            alt="Banner" 
+          />
+        ) : (
+          <h2 className="text-white font-[900] text-4xl sm:text-6xl tracking-tighter uppercase italic z-10">MULTIFACETED.</h2>
+        )}
+        {artist?.bannerImg && <div className="absolute inset-0 bg-white/5 blur-2xl" />}
       </motion.div>
 
-      {/* 3. HERO VIDEO PLAYER */}
+      {/* 3. BLANK COLUMN (1 Column) */}
+      <div className="hidden md:flex md:col-span-1 md:row-span-1 bg-transparent border border-dashed border-white/5 rounded-[2.5rem] items-center justify-center">
+        <span className="text-zinc-800 font-mono text-[10px] uppercase tracking-widest">Reserved</span>
+      </div>
+
+      {/* 4. HERO VIDEO PLAYER */}
       <motion.div 
         ref={containerRef}
         variants={tileHover} initial="initial" whileHover="hover"
@@ -100,13 +114,11 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
           )}
         </AnimatePresence>
 
-        {/* NAVIGATION LAYER */}
         <div className={`absolute inset-0 z-[70] flex items-center justify-between px-6 transition-opacity pointer-events-none ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <button onClick={handlePrev} className="p-3 bg-black/40 hover:bg-white hover:text-black rounded-full backdrop-blur-md border border-white/10 text-white pointer-events-auto"><ChevronLeft size={20} /></button>
           <button onClick={handleNext} className="p-3 bg-black/40 hover:bg-white hover:text-black rounded-full backdrop-blur-md border border-white/10 text-white pointer-events-auto"><ChevronRight size={20} /></button>
         </div>
 
-        {/* MUTE & PROGRESS */}
         <div className={`absolute inset-0 z-50 flex flex-col justify-end p-8 transition-opacity pointer-events-none ${showControls && !hasEnded ? 'opacity-100 bg-gradient-to-t from-black/90' : 'opacity-0'}`}>
           <div className="flex items-center gap-4 w-full pointer-events-auto">
             <div className="relative flex-grow h-1.5 bg-white/10 rounded-full overflow-hidden">
@@ -117,12 +129,12 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
         </div>
       </motion.div>
 
-      {/* 4. MAIN SOCIAL */}
+      {/* 5. MAIN SOCIAL */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" className="row-span-2 md:col-span-1 md:row-span-2 bg-zinc-800 rounded-[2.5rem] overflow-hidden relative border border-white/5 group">
         {posts[0] && <img src={posts[0].mediaUrl} className="w-full h-full object-cover" alt="Social" />}
       </motion.div>
 
-      {/* 5. TOUR DATES */}
+      {/* 6. TOUR DATES */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" className="row-span-2 md:col-span-1 md:row-span-2 bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 flex flex-col h-full relative">
         <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest mb-8 text-center">Live Shows</p>
         <div className="space-y-6 overflow-y-auto flex-grow custom-scrollbar">
@@ -136,13 +148,13 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
         <button onClick={() => setIsContactModalOpen(true)} className="mt-6 w-full py-4 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-cyan-400">Contact</button>
       </motion.div>
 
-      {/* 6. SPOTIFY */}
+      {/* 7. SPOTIFY */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-1 bg-emerald-500/10 border border-emerald-500/20 rounded-[2.5rem] p-8 flex flex-col justify-between group">
         <Play fill="#10b981" className="text-emerald-500" size={32} />
         <span className="text-emerald-500 font-black text-xs uppercase">Listen Now</span>
       </motion.div>
 
-      {/* UPDATED: ABOUT TILE USING THE BIO FIELD */}
+      {/* 8. ABOUT TILE */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-1 bg-zinc-900 rounded-[2.5rem] p-8 border border-white/5 flex flex-col justify-center relative overflow-hidden">
         <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-[0.3em] mb-3">About</p>
         <div className="text-white text-[11px] leading-relaxed opacity-80 font-medium line-clamp-5">
@@ -154,13 +166,13 @@ export default function BentoGrid({ socials, artist, tourDates }: any) {
         </div>
       </motion.div>
 
-      {/* 7. SNAPCHAT */}
+      {/* 9. SNAPCHAT */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" className="bg-[#FFFC00] rounded-[2.5rem] p-8 flex flex-col justify-between text-black group cursor-pointer">
          <Ghost size={36} strokeWidth={2.5} />
          <span className="text-[12px] font-black uppercase">@{artist?.logoText || 'AGGY'}</span>
       </motion.div>
 
-      {/* 8. SMALL SOCIAL TILE */}
+      {/* 10. SMALL SOCIAL TILE */}
       <motion.div variants={tileHover} initial="initial" whileHover="hover" className="md:col-span-1 md:row-span-1 bg-zinc-900 rounded-[2.5rem] overflow-hidden border border-white/5 relative">
         {posts[1] ? <img src={posts[1].mediaUrl} className="w-full h-full object-cover opacity-60" alt="Social" /> : <div className="w-full h-full flex items-center justify-center opacity-40"><Plus size={24} className="text-white" /></div>}
       </motion.div>
